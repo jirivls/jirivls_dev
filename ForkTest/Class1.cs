@@ -8,9 +8,5 @@ namespace ForkTest
 {
     internal class Class1
     {
-        public static int Test(int x)
-        {
-            return x;
-        }
     }
 }
