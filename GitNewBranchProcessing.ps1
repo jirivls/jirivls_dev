@@ -119,4 +119,4 @@ Write-Host "Odstraneni nove branch: $BranchName z trackovanych v Develop reposit
 git branch -d $BranchName
 git fetch --prune
 
-Write-Host "Branch byla uspesne pripravena. Nova vetev sleduje vsechny vzdalene vetve a
+Write-Host "Branch byla uspesne pripravena. Nova vetev sleduje vsechny vzdalene vetve a vetev Develop ji jiz nesleduje."
