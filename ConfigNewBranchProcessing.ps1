@@ -1,5 +1,8 @@
 param (
-    [string]$version  # Napr. 5.1.25
+    [string]$version,
+    [string]$ApplicationKey,
+    [string]$ApplicationUid,
+    [string]$LicenceKey
 )
 
 # Odstraneni tecek z verze pro katalog

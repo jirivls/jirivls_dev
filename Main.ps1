@@ -42,15 +42,33 @@ $database = "DOCUX51_DEV_ADMIN"
 $user = "uzivatel"
 $password = "heslo"
 
+Write-Host "Slozeni SQL query pro ziskani hodnot posledne zalozene aplikace v dbo.Applications"
 # Slozeni SQL dotazu
 $sqlQuery = "SELECT TOP 1 [Uid], [Name], [Key], [LicenceKey] FROM [dbo].[Applications] ORDER BY ID DESC"
 
+Write-Host "Spusteni SQL query do DB"
 # Spusteni prikazu a ulozeni vysledku
 $result = sqlcmd -S $server -d $database -U $user -P $password -Q $sqlQuery -s ";" -W
 
 Write-Host "Zobrazeni vysledku:"
 $result
 
+Write-Host "Parsovani vysledku pro predani do parametru"
+# Parsovani vysledku
+$parsed = $result | Where-Object { $_ -and ($_ -notmatch "Uid") } | Select-Object -First 1
+$columns = $parsed -split ";"
+
+$applicationUid = $columns[0].Trim()
+$applicationName = $columns[1].Trim()
+$applicationKey = $columns[2].Trim()
+$licenceKey = $columns[3].Trim()
+
+Write-Host "Name: $applicationName, Key: $applicationKey, Uid: $applicationUid, LicenceKey: $licenceKey"
+
 Write-Host "Spousteni skriptu ConfigNewBranchProcessing.ps1"
-# Spusteni skriptu pro upravu  nove branch configu
-& "$PSScriptRoot\ConfigNewBranchProcessing.ps1" -version $branchVersion
+# Spusteni skriptu pro upravu nove branch configu
+& "$PSScriptRoot\ConfigNewBranchProcessing.ps1" `
+    -version $branchVersion `
+    -ApplicationKey $applicationKey `
+    -ApplicationUid $applicationUid `
+    -LicenceKey $licenceKey
