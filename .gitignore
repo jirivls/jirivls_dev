@@ -1,3 +1,94 @@
-﻿*.vsidx
-*.vs
-obj
+﻿################################################################################
+# This .tfignore file was automatically created by Microsoft(R) Visual Studio.
+#
+# Local items matching filespecs in this file will not be added to version
+# control. This file can be checked in to share exclusions with others.
+#
+# Wildcard characters are * and ?. Patterns are matched recursively unless the
+# pattern is prefixed by the \ character.
+#
+# You can prepend a path to a pattern to make it more specific. If you do,
+# wildcard characters are not permitted in the path portion.
+#
+# The # character at the beginning of a line indicates a comment.
+#
+# The ! prefix negates a pattern. This can be used to re-include an item after
+# it was excluded by a .tfignore file higher in the tree, or by the Team
+# Project Collection's global exclusions list.
+#
+# The / character is interpreted as a \ character on Windows platforms.
+#
+# Examples:
+#
+#  # Excludes all files ending in .txt in Alpha\Beta and all its subfolders.
+#  Alpha\Beta\*.txt
+#
+#  # Excludes all files ending in .cpp in this folder only.
+#  \*.cpp
+#
+#  # Excludes all files ending in .cpp in this folder and all subfolders.
+#  *.cpp
+#
+#  # If "Contoso" is a folder, then Contoso and all its children are excluded.
+#  # If it is a file, then only the "Contoso" in this folder is excluded.
+#  \Contoso
+#
+#  # If Help.exe is excluded by a higher .tfignore file or by the Team Project
+#  # Collection global exclusions list, then this pattern re-includes it in
+#  # this folder only.
+#  !\Help.exe    
+#
+################################################################################
+
+/**/node_modules/**/*
+/**/dist/**/*
+/**/.vs/**/*
+/**/bin/**/*
+/**/obj/**/*
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+/**/ClientApp/coverage
+.history
+
+# Visual Studio automatically genrated meta-files for .ts models:
+/**/models/**/*.js
+/**/models/**/*.js.map
+/**/enums/**/*.js
+/**/enums/**/*.js.map
+/**/shared/**/helpers/**/*.js
+/**/shared/**/helpers/**/*.js.map
+/**/DocuX/Socosit.Dms/Properties/AssemblyInfo.cs
+/**/ClientApp/dist
+
+# Fixing MacOS wrongly indexing following patterns:
+/**/C:\\**\\*
+/**/D:/**/*
+
+/**/*.csproj.user
+/**/*.pubxml.user
+/**/*.DotSettings.user
+/**/.angular/**
+/**/logs/nlog
+/Publishers/Publisher.log
+/Tools.Binaries/Publishers/Publisher.log
+/Tools.Binaries/Publishers/tmp
+/BE/Ocr/Socosit.Ocr.Web/wwwroot
+/BE/Ocr/Socosit.Cli.Install/publish
+/BE/Dms/DocuxAgent/Installers/DocuxAgentInstaller/BundleArtifacts
+/BE/Dms/DocuxAgent/Installers/DocuxAgentInstaller/DocuxAgentInstaller.assets.cache
+/BE/Dms/DocuxAgent/Installers/DocuxAgentInstaller/DocuxAgentInstaller_TemporaryKey.pfx
+/BE/Dms/DocuX/Webs/Socosit.Dms.WebServer/App_Data/DocuxAgentInstallers/**
+/BE/Dms/DocuxAgent/Installers/DocuxAgentInstaller/Package.appxmanifest
+/BE/Dms/DocuxAgent/Installers/DocuxAgentInstaller/DocuxAgentInstaller.wapproj
+/BE/Dms/DocuX/Webs/Socosit.Dms.WebServer/tmp
+Tools.Binaries/DocuXAgent
+Tools.Binaries/Publishers
+Tools.Binaries/Agents
+BE/Dms/DocuX/Webs/Socosit.Dms.WebServer/App_Data/HealthChecks*
+/BE/Ocr/packages/DllExport.1.7.4
+/FE/.env
+/Tools.Binaries/PublishersOLD
+/Tools.Binaries/Publisher/tmp/
