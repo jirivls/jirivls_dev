@@ -23,8 +23,34 @@ $nextVersion = "$major.$minor." + ($patch + 1) + ".0"
 Write-Host "Verze pro novou branch: $branchVersion"
 Write-Host "Nova verze pro develop: $nextVersion"
 
+Write-Host "Spousteni skriptu GitNewBranchProcessing.ps1"
 # Spusteni skriptu pro vytvoreni branch
-& "$PSScriptRoot\GitNewBranchProcessing.ps1" -version $branchVersion
+#& "$PSScriptRoot\GitNewBranchProcessing.ps1" -version $branchVersion
 
+Write-Host "Spousteni skriptu ConfigDevelopBranchProcessing.ps1"
 # Spusteni skriptu pro upravu develop configu
-& "$PSScriptRoot\ConfigDevelopBranchProcessing.ps1" -version $nextVersion
+#& "$PSScriptRoot\ConfigDevelopBranchProcessing.ps1" -version $nextVersion
+
+# Spustit SP pro novou verzi v adminovi
+
+# Spusteni query pro ziskani hodnot posledne zalozene aplikace
+Write-Host "Spousteni SQL prikazu pomoci sqlcmd"
+
+# Parametry connection string
+$server = "192.168.4.1"
+$database = "DOCUX51_DEV_ADMIN"
+$user = "uzivatel"
+$password = "heslo"
+
+# Slozeni SQL dotazu
+$sqlQuery = "SELECT TOP 1 [Uid], [Name], [Key], [LicenceKey] FROM [dbo].[Applications] ORDER BY ID DESC"
+
+# Spusteni prikazu a ulozeni vysledku
+$result = sqlcmd -S $server -d $database -U $user -P $password -Q $sqlQuery -s ";" -W
+
+Write-Host "Zobrazeni vysledku:"
+$result
+
+Write-Host "Spousteni skriptu ConfigNewBranchProcessing.ps1"
+# Spusteni skriptu pro upravu  nove branch configu
+& "$PSScriptRoot\ConfigNewBranchProcessing.ps1" -version $branchVersion
