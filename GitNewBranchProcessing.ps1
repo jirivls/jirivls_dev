@@ -8,7 +8,7 @@ $configPath = Join-Path $gitRoot "Tools.Binaries\Publisher\config.json"
 $config = Get-Content $configPath -Raw | ConvertFrom-Json
 
 # Nastaveni API tokenu
-$gitToken = "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"
+$gitToken = $config.Jit.GitApiToken
 
 # Vytazeni posledni verze
 $fullVersion = $config.DMS.LastVersion
@@ -27,6 +27,32 @@ Write-Host "New version (auto-incremented): $nextVersion"
 # Pouzije se jako jmeno pro novou branch i slozku
 $BranchName = $nextVersion
 
+# Pokud branch uz existuje tak konec skriptu
+$remoteBranchExists = git ls-remote --heads origin $BranchName
+if ($remoteBranchExists) {
+    Write-Host "Branch '$BranchName' already exists on remote. Exiting script."
+    exit 1
+}
+
+# Priprava slozky pro klon
+$parentDir = Split-Path $gitRoot -Parent
+$cloneDir = Join-Path $parentDir $BranchName
+
+# Kontrola, jestli slozka uz existuje
+if (Test-Path $cloneDir) {
+    Write-Host "Error: Directory '$cloneDir' already exists. Remove or rename it first."
+    exit 1
+}
+
+$currentBranch = git rev-parse --abbrev-ref HEAD
+if ($currentBranch -ne "Develop") {
+    $hasUncommittedChanges = git status --porcelain
+    if ($hasUncommittedChanges) {
+        Write-Host "Warning: You have uncommitted changes on branch '$currentBranch'. Commit or stash them before continuing."
+        exit 1
+    }
+}
+
 # Prepnuti do Develop branch
 git checkout Develop
 Write-Host "Switched to Develop branch."
@@ -34,6 +60,12 @@ Write-Host "Switched to Develop branch."
 # Vytvoreni nove branch
 git checkout -b $BranchName
 git push origin $BranchName
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error: Failed to push branch '$BranchName' to origin."
+    exit 1
+}
+
 Write-Host "Branch $BranchName created and pushed to remote."
 
 # Ziskani repo URL
@@ -44,10 +76,13 @@ Write-Host "Remote repository URL: $repoUrl"
 $authGitUrl = $repoUrl -replace "https://", "https://$gitToken@"
 
 # Naklonovani branch na lokal
-$parentDir = Split-Path $gitRoot -Parent
-$cloneDir = Join-Path $parentDir $BranchName
 Write-Host "Cloning repository with only branch $BranchName..."
 git clone --single-branch --branch $BranchName $authGitUrl $cloneDir
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error: Git clone failed. Exiting script."
+    exit 1
+}
 
 # Prepnuti do nove branch
 Set-Location $cloneDir
