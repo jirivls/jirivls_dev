@@ -39,29 +39,38 @@ Write-Host "Spousteni SQL prikazu pomoci sqlcmd"
 # Parametry connection string
 $server = "192.168.4.1"
 $database = "DOCUX51_DEV_ADMIN"
-$user = "uzivatel"
-$password = "heslo"
+$user = ""
+$password = ""
+Write-Host "Spusteni SQL query do DB"
 
 Write-Host "Slozeni SQL query pro ziskani hodnot posledne zalozene aplikace v dbo.Applications"
-# Slozeni SQL dotazu
-$sqlQuery = "SELECT TOP 1 [Uid], [Name], [Key], [LicenceKey] FROM [dbo].[Applications] ORDER BY ID DESC"
+# Spusteni prikazu a ulozeni vysledku — potlaceni hlavicky a orezani mezer
+$sqlQuery = "SET NOCOUNT ON; SELECT TOP 1 [Uid], [Name], [Key], [LicenceKey] FROM [dbo].[Applications] ORDER BY ID DESC"
 
 Write-Host "Spusteni SQL query do DB"
-# Spusteni prikazu a ulozeni vysledku
-$result = sqlcmd -S $server -d $database -U $user -P $password -Q $sqlQuery -s ";" -W
+# Execute the SQL query with header suppression and column delimiter
+$result = sqlcmd -S $server -d $database -U $user -P $password -Q "`"$sqlQuery`"" -h -1 -s ";" -W 2>&1
 
 Write-Host "Zobrazeni vysledku:"
 $result
-
 Write-Host "Parsovani vysledku pro predani do parametru"
-# Parsovani vysledku
-$parsed = $result | Where-Object { $_ -and ($_ -notmatch "Uid") } | Select-Object -First 1
-$columns = $parsed -split ";"
 
-$applicationUid = $columns[0].Trim()
-$applicationName = $columns[1].Trim()
-$applicationKey = $columns[2].Trim()
-$licenceKey = $columns[3].Trim()
+# Filter out lines with only dashes or empty lines
+$parsed = $result | Where-Object {
+    $_ -and ($_ -notmatch "^-+$") -and ($_ -notmatch "^\s*$")
+} | Select-Object -First 1
+
+if (-not $parsed) {
+    Write-Host "Chyba: SQL dotaz nevratil platny radek s daty."
+    exit 1
+}
+
+$columns = $parsed -split ";" | ForEach-Object { $_.Trim() }
+
+$applicationUid  = $columns[0]
+$applicationName = $columns[1]
+$applicationKey  = $columns[2]
+$licenceKey      = $columns[3]
 
 Write-Host "Name: $applicationName, Key: $applicationKey, Uid: $applicationUid, LicenceKey: $licenceKey"
 
