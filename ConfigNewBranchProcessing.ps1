@@ -32,7 +32,7 @@ $config.ADMIN.LastVersion = $newVersion
 
 Write-Host "Nastaveni cesty k instalacnimu balicku docu-x agenta"
 # Aktualizace cest v DMS.CopyFilesToOutputDirectoryPostPublish
-$config.DMS.CopyFilesToOutputDirectoryPostPublish[0].SourcePath = "F:\\GIT\\Agents\\$newFolderVersion\\Win"
+$config.DMS.CopyFilesToOutputDirectoryPostPublish[0].SourcePath = "F:\GIT\Agents\$newFolderVersion\Win"
 
 Write-Host "Ulozeni zmen zpet do config.json"
 # Ulozeni zpet do config.json
