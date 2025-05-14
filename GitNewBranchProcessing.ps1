@@ -1,3 +1,7 @@
+param (
+    [string]$version  # Napr. 5.1.25
+)
+
 # Ziskani root cesty repository
 $gitRoot = git rev-parse --show-toplevel
 
@@ -14,19 +18,11 @@ Write-Host "Nastaveni Git Api tokenu z configu"
 $gitToken = $config.Jit.GitApiToken
 
 Write-Host "Nacteni posledni verze pro nazev nove branch"
-# Vytazeni posledni verze
-$fullVersion = $config.DMS.LastVersion
 
-# Nacteni bez build verze
-$segments = ($fullVersion -split '\.')
+# Cislo verze odlite podle konfigurace
+$BranchName = $version
 
-# Poskladani verze zpet bez build cisla (no increment!)
-$nextVersion = ($segments[0..2] -join '.')
-
-Write-Host "Nazev nove verze (auto-incremented): $nextVersion"
-
-# Pouzije se jako jmeno pro novou branch i slozku
-$BranchName = $nextVersion
+Write-Host "Nazev nove verze (auto-incremented): $version"
 
 Write-Host "Kontrola zdali uz nove vytvarena branch neexistuje na Git"
 # Kontrola: pokud branch uz existuje tak konec skriptu
