@@ -92,3 +92,4 @@ BE/Dms/DocuX/Webs/Socosit.Dms.WebServer/App_Data/HealthChecks*
 /FE/.env
 /Tools.Binaries/PublishersOLD
 /Tools.Binaries/Publisher/tmp/
+/Tools.Binaries/Publisher/config.json

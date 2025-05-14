@@ -16,10 +16,7 @@ $fullVersion = $config.DMS.LastVersion
 # Nacteni bez build verze
 $segments = ($fullVersion -split '\.')
 
-# Zvyseni PATCH verze o 1
-$segments[2] = ([int]$segments[2]) + 1
-
-# Poskladani verze zpet bez build cisla
+# Poskladani verze zpet bez build cisla (no increment!)
 $nextVersion = ($segments[0..2] -join '.')
 
 Write-Host "New version (auto-incremented): $nextVersion"
@@ -27,7 +24,7 @@ Write-Host "New version (auto-incremented): $nextVersion"
 # Pouzije se jako jmeno pro novou branch i slozku
 $BranchName = $nextVersion
 
-# Pokud branch uz existuje tak konec skriptu
+# Kontrola: pokud branch uz existuje tak konec skriptu
 $remoteBranchExists = git ls-remote --heads origin $BranchName
 if ($remoteBranchExists) {
     Write-Host "Branch '$BranchName' already exists on remote. Exiting script."
@@ -38,19 +35,24 @@ if ($remoteBranchExists) {
 $parentDir = Split-Path $gitRoot -Parent
 $cloneDir = Join-Path $parentDir $BranchName
 
-# Kontrola, jestli slozka uz existuje
+# Kontrola: pokud slozka uz existuje tak konec skriptu
 if (Test-Path $cloneDir) {
     Write-Host "Error: Directory '$cloneDir' already exists. Remove or rename it first."
     exit 1
 }
 
+# Kontrola: je spousteno na Develop branch
 $currentBranch = git rev-parse --abbrev-ref HEAD
 if ($currentBranch -ne "Develop") {
-    $hasUncommittedChanges = git status --porcelain
-    if ($hasUncommittedChanges) {
-        Write-Host "Warning: You have uncommitted changes on branch '$currentBranch'. Commit or stash them before continuing."
-        exit 1
-    }
+    Write-Host "Warning: You are not on 'Develop' branch. You are on '$currentBranch'."
+    exit 1
+}
+
+# Kontrola: nejsou necommitnute soubory
+$hasUncommittedChanges = $(git status --porcelain)
+if ($hasUncommittedChanges.Count -gt 0) {
+    Write-Host "Warning: You have uncommitted changes on branch '$currentBranch'. Commit or stash them before continuing."
+    exit 1
 }
 
 # Prepnuti do Develop branch
@@ -99,3 +101,5 @@ git branch -d $BranchName
 git fetch --prune
 
 Write-Host "Branch setup completed successfully. The new branch tracks all remote branches, and Develop no longer tracks it."
+
+nsatavit cofnig verzi
