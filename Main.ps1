@@ -27,4 +27,4 @@ Write-Host "Nova verze pro develop: $nextVersion"
 & "$PSScriptRoot\GitNewBranchProcessing.ps1" -version $branchVersion
 
 # Spusteni skriptu pro upravu develop configu
-#& "$PSScriptRoot\ConfigDevelopBranchProcessing.ps1" -version $nextVersion
+& "$PSScriptRoot\ConfigDevelopBranchProcessing.ps1" -version $nextVersion
