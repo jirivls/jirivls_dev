@@ -9,8 +9,13 @@ Write-Host "Spusteni SQL query do DB"
 $sqlQuery = "SET NOCOUNT ON; SELECT TOP 1 [Uid], [Name], [Key], [LicenceKey], [Id] FROM [dbo].[Applications] ORDER BY ID DESC"
 
 # Spusteni prikazu s potlacenou hlavickou a definovanym oddelovacem
-$result = sqlcmd -S $server -d $database -U $user -P $password -Q "`"$sqlQuery`"" -h -1 -s ";" -W 2>&1
-
+try {
+    # Spusteni prikazu s potlacenou hlavickou a definovanym oddelovacem
+    $result = sqlcmd -S $server -d $database -U $user -P $password -Q "`"$sqlQuery`"" -h -1 -s ";" -W 2>&1
+} catch {
+    Write-Host "Chyba: Nelze spustit SQL dotaz"
+    exit 1
+}
 Write-Host "Parsovani vysledku pro predani do parametru"
 $parsed = $result | Where-Object {
     $_ -and ($_ -notmatch "^-+$") -and ($_ -notmatch "^\s*$")
