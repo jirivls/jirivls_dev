@@ -23,56 +23,56 @@ $nextVersion = "$major.$minor." + ($patch + 1) + ".0"
 Write-Host "Verze pro novou branch: $branchVersion"
 Write-Host "Nova verze pro develop: $nextVersion"
 
+# ========================
+# SPUSTENI GitNewBranchProcessing
+# ========================
+
 Write-Host "Spousteni skriptu GitNewBranchProcessing.ps1"
 # Spusteni skriptu pro vytvoreni branch
-#& "$PSScriptRoot\GitNewBranchProcessing.ps1" -version $branchVersion
+& "$PSScriptRoot\GitNewBranchProcessing.ps1" -version $branchVersion
 
+# ========================
+# SPUSTENI GitNewBranchProcessing
+# ========================
 Write-Host "Spousteni skriptu ConfigDevelopBranchProcessing.ps1"
 # Spusteni skriptu pro upravu develop configu
-#& "$PSScriptRoot\ConfigDevelopBranchProcessing.ps1" -version $nextVersion
+& "$PSScriptRoot\ConfigDevelopBranchProcessing.ps1" -version $nextVersion
+
+# ========================
+# SPUSTENI SP SP_AdminCreateNewAppication,GetApplicationInfo.ps1,ConfigDevelopBranchProcessing.ps1
+# ========================
 
 # Spustit SP pro novou verzi v adminovi
-
+Write-Host "Naplneni connection string a overeni pro sql prikazy"
 # Spusteni query pro ziskani hodnot posledne zalozene aplikace
-Write-Host "Spousteni SQL prikazu pomoci sqlcmd"
-
-# Parametry connection string
-$server = "192.168.4.1"
+$server   = "192.168.4.1"
 $database = "DOCUX51_DEV_ADMIN"
-$user = ""
-$password = ""
-Write-Host "Spusteni SQL query do DB"
+$user     = "uzivatel"
+$password = "heslo"
 
-Write-Host "Slozeni SQL query pro ziskani hodnot posledne zalozene aplikace v dbo.Applications"
-# Spusteni prikazu a ulozeni vysledku — potlaceni hlavicky a orezani mezer
-$sqlQuery = "SET NOCOUNT ON; SELECT TOP 1 [Uid], [Name], [Key], [LicenceKey] FROM [dbo].[Applications] ORDER BY ID DESC"
+Write-Host "Spousteni SP_AdminCreateNewAppication pro zalozeni a zprocesovani nove aplikace"
+# Command v DOCUX51_DEV_ADMIN pro zalozeni nove aplikace
+$sqlQuery = "EXEC SP_AdminCreateNewAppication @NewVersion = N'$branchVersion'"
 
-Write-Host "Spusteni SQL query do DB"
-# Execute the SQL query with header suppression and column delimiter
-$result = sqlcmd -S $server -d $database -U $user -P $password -Q "`"$sqlQuery`"" -h -1 -s ";" -W 2>&1
+sqlcmd -S $server `
+                 -d $database `
+                 -U $user `
+                 -P $password `
+                 -Q "`"$sqlQuery`"" `
+                 -h -1 -s ";" -W 2>&1
+                 
+Write-Host "Spousteni SQL query pro ziskani informaci posledni aplikace pomoci sqlcmd"
+# Query DOCUX51_DEV_ADMIN.dbo.Applications pro ziskani informaci a posledne zalozene aplikaci pro update config a dbContext souboru
 
-Write-Host "Zobrazeni vysledku:"
-$result
-Write-Host "Parsovani vysledku pro predani do parametru"
+$values = & "$PSScriptRoot\GetApplicationInfo.ps1" -server $server -database $database -user $user -password $password
 
-# Filter out lines with only dashes or empty lines
-$parsed = $result | Where-Object {
-    $_ -and ($_ -notmatch "^-+$") -and ($_ -notmatch "^\s*$")
-} | Select-Object -First 1
+$applicationUid   = $values[0]
+$applicationName  = $values[1]
+$applicationKey   = $values[2]
+$licenceKey       = $values[3]
+$applicationId    = $values[4]
 
-if (-not $parsed) {
-    Write-Host "Chyba: SQL dotaz nevratil platny radek s daty."
-    exit 1
-}
-
-$columns = $parsed -split ";" | ForEach-Object { $_.Trim() }
-
-$applicationUid  = $columns[0]
-$applicationName = $columns[1]
-$applicationKey  = $columns[2]
-$licenceKey      = $columns[3]
-
-Write-Host "Name: $applicationName, Key: $applicationKey, Uid: $applicationUid, LicenceKey: $licenceKey"
+Write-Host "Hodnoty posledni aplikace pro aktualizaci config.json a DmsDocuXContext.cs: Name=$applicationName, Key=$applicationKey, UID=$applicationUid, Licence=$licenceKey, ID=$applicationId"
 
 Write-Host "Spousteni skriptu ConfigNewBranchProcessing.ps1"
 # Spusteni skriptu pro upravu nove branch configu
@@ -80,4 +80,13 @@ Write-Host "Spousteni skriptu ConfigNewBranchProcessing.ps1"
     -version $branchVersion `
     -ApplicationKey $applicationKey `
     -ApplicationUid $applicationUid `
-    -LicenceKey $licenceKey
+    -LicenceKey $licenceKey `
+    -ApplicationId $applicationId
+
+# ========================
+# SPUSTENI CopyFiles.ps1
+# ========================
+
+Write-Host "Spousteni skriptu CopyFiles.ps1 pro kopirovani instalacniho balicku agenta"
+# Prekopirovani instalcniho balicku agenta do nove odlite verze z Develop
+& "$PSScriptRoot\CopyFiles.ps1" -version $branchVersion

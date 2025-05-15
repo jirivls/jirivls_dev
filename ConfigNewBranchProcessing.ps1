@@ -2,12 +2,9 @@ param (
     [string]$version,
     [string]$ApplicationKey,
     [string]$ApplicationUid,
-    [string]$LicenceKey
+    [string]$LicenceKey,
+    [string]$ApplicationId
 )
-
-# Odstraneni tecek z verze pro katalog
-$catalogSuffix = $version -replace '\.', ''
-$catalogName = "DOCUX_DEV_$catalogSuffix"
 
 # Ziskani root cesty puvodniho repozitare
 $gitRoot = git rev-parse --show-toplevel
@@ -26,9 +23,9 @@ if (-not (Test-Path $contextPath)) {
 
 Write-Host "Uprava souboru: $contextPath"
 $contextContent = Get-Content $contextPath -Raw
-$contextContent = $contextContent -replace 'initial catalog=[^;"]+', "initial catalog=$catalogName"
+$contextContent = $contextContent -replace 'initial catalog=[^;"]+', "initial catalog=$ApplicationKey"
 Set-Content -Path $contextPath -Value $contextContent -Encoding UTF8
-Write-Host "Katalog v DmsDocuXContext.cs byl upraven na: $catalogName"
+Write-Host "Katalog v DmsDocuXContext.cs byl upraven na: $ApplicationKey"
 
 # ========================
 # UPRAVA globalAppsettings.json
@@ -40,8 +37,20 @@ if (-not (Test-Path $appsettingsPath)) {
     exit 1
 }
 
-Write-Host "Uprava souboru: $appsettingsPath"
-$appsettingsContent = Get-Content $appsettingsPath -Raw
-$appsettingsContent = $appsettingsContent -replace 'initial catalog=[^;"]+', "initial catalog=$catalogName"
-Set-Content -Path $appsettingsPath -Value $appsettingsContent -Encoding UTF8
-Write-Host "Katalog v globalAppsettings.json byl upraven na: $catalogName"
+# Nacteni obsahu JSON
+$appsettings = Get-Content $appsettingsPath -Raw | ConvertFrom-Json
+
+Write-Host "Aktualizace hodnot v DevConfigs"
+
+$appsettings.DevConfigs.DmsConnectionString = $appsettings.DevConfigs.DmsConnectionString -replace 'initial catalog=[^;"]+', "initial catalog=$ApplicationKey"
+$appsettings.DevConfigs.ApplicationId = [int]$ApplicationId
+$appsettings.DevConfigs.Licence.ApplicationId = [int]$ApplicationId
+$appsettings.DevConfigs.Licence.LicenceKey = $LicenceKey
+$appsettings.DevConfigs.Application.Key = $ApplicationKey
+$appsettings.DevConfigs.Application.Name = $ApplicationKey
+$appsettings.DevConfigs.Application.Uid = $ApplicationUid
+
+# Prevod zpet do JSON a ulozeni
+$appsettings | ConvertTo-Json -Depth 10 | Set-Content -Encoding UTF8 $appsettingsPath
+
+Write-Host "DevConfigs v $appsettingsPath byl aktualizovan."

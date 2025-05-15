@@ -8,6 +8,12 @@ $gitRoot = git rev-parse --show-toplevel
 # Cesta ke config.json
 $configPath = Join-Path $gitRoot "Tools.Binaries\Publisher\config.json"
 
+# Kontrola ze config.json existuje
+if (-not (Test-Path $configPath)) {
+    Write-Host "Error: Soubor nenalezen: $configPath"
+    exit 1
+}
+
 Write-Host "Nacteni config.json: $configPath"
 $config = Get-Content $configPath -Raw | ConvertFrom-Json
 
