@@ -8,15 +8,21 @@ param (
 Write-Host "Spusteni SQL query do DB"
 $sqlQuery = "SET NOCOUNT ON; SELECT TOP 1 [Uid], [Name], [Key], [LicenceKey], [Id] FROM [dbo].[Applications] ORDER BY ID DESC"
 
-# Spusteni prikazu s potlacenou hlavickou a definovanym oddelovacem
-$result = sqlcmd -S $server -d $database -U $user -P $password -Q "`"$sqlQuery`"" -h -1 -s ";" -W 2>&1
+try {
+    # Spusteni prikazu s potlacenou hlavickou a definovanym oddelovacem
+    $result = sqlcmd -S $server -d $database -U $user -P $password -Q "`"$sqlQuery`"" -h -1 -s ";" -W 2>&1
+} catch {
+    Write-Host "Chyba: sqlcmd selhal (napr. chyba pripojeni nebo neplatne prihlaseni)"
+    exit 1
+}
 
-# Kontrola chybove hlasky
+# Kontrola chybove hlasky ve vysledku
 if ($LASTEXITCODE -ne 0 -or $result -match "Sqlcmd:" -or $result -match "Msg \d+") {
     Write-Host "Chyba: SQL dotaz selhal nebo vratil chybu"
     Write-Host $result
     exit 1
 }
+
 
 Write-Host "Parsovani vysledku pro predani do parametru"
 $parsed = $result | Where-Object {
