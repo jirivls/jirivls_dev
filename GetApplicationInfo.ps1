@@ -9,13 +9,15 @@ Write-Host "Spusteni SQL query do DB"
 $sqlQuery = "SET NOCOUNT ON; SELECT TOP 1 [Uid], [Name], [Key], [LicenceKey], [Id] FROM [dbo].[Applications] ORDER BY ID DESC"
 
 # Spusteni prikazu s potlacenou hlavickou a definovanym oddelovacem
-try {
-    # Spusteni prikazu s potlacenou hlavickou a definovanym oddelovacem
-    $result = sqlcmd -S $server -d $database -U $user -P $password -Q "`"$sqlQuery`"" -h -1 -s ";" -W 2>&1
-} catch {
-    Write-Host "Chyba: Nelze spustit SQL dotaz"
+$result = sqlcmd -S $server -d $database -U $user -P $password -Q "`"$sqlQuery`"" -h -1 -s ";" -W 2>&1
+
+# Kontrola chybove hlasky
+if ($LASTEXITCODE -ne 0 -or $result -match "Sqlcmd:" -or $result -match "Msg \d+") {
+    Write-Host "Chyba: SQL dotaz selhal nebo vratil chybu"
+    Write-Host $result
     exit 1
 }
+
 Write-Host "Parsovani vysledku pro predani do parametru"
 $parsed = $result | Where-Object {
     $_ -and ($_ -notmatch "^-+$") -and ($_ -notmatch "^\s*$")
@@ -34,10 +36,10 @@ $applicationKey  = $columns[2]
 $licenceKey      = $columns[3]
 $applicationId   = $columns[4]
 
-Write-Host "Name: $applicationName, Key: $applicationKey, Uid: $applicationUid, LicenceKey: $licenceKey,  Id: $applicationId"
-
+Write-Host "Name: $applicationName, Key: $applicationKey, Uid: $applicationUid, LicenceKey: $licenceKey, Id: $applicationId"
 Write-Host "Konec SQL query a vraceni vysledku zpet do Main.ps1"
-# Vystup jako objekt pro dalsi pouziti
+
+# Vystup jako jednotlive radky
 Write-Output $applicationUid
 Write-Output $applicationName
 Write-Output $applicationKey
