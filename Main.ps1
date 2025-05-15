@@ -70,6 +70,7 @@ $password = "heslo"
 Write-Host "Spousteni SP_AdminCreateNewAppication pro zalozeni a zprocesovani nove aplikace"
 $sqlQuery = "EXEC SP_AdminCreateNewAppication @NewVersion = N'$branchVersion'"
 
+<#
 try {
     sqlcmd -S $server `
            -d $database `
@@ -81,7 +82,7 @@ try {
     Write-Host "Chyba pri volani SP_AdminCreateNewAppication"
     exit 1
 }
-
+#>
 # ========================
 # SPUSTENI GetApplicationInfo.ps1
 # ========================
