@@ -70,7 +70,6 @@ $password = "heslo"
 Write-Host "Spousteni SP_AdminCreateNewAppication pro zalozeni a zprocesovani nove aplikace"
 $sqlQuery = "EXEC SP_AdminCreateNewAppication @NewVersion = N'$branchVersion'"
 
-<#
 try {
     sqlcmd -S $server `
            -d $database `
@@ -82,16 +81,21 @@ try {
     Write-Host "Chyba pri volani SP_AdminCreateNewAppication"
     exit 1
 }
-#>
+
 # ========================
 # SPUSTENI GetApplicationInfo.ps1
 # ========================
 Write-Host "Spousteni SQL query pro ziskani informaci posledni aplikace pomoci sqlcmd"
-try {
-    $values = & "$PSScriptRoot\GetApplicationInfo.ps1" -server $server -database $database -user $user -password $password
-} catch {
-    Write-Host "Chyba ve skriptu GetApplicationInfo.ps1"
-    exit 1
+
+$scriptPath = "$PSScriptRoot\GetApplicationInfo.ps1"
+$cmd = "powershell -ExecutionPolicy Bypass -File `"$scriptPath`" -server `"$server`" -database `"$database`" -user `"$user`" -password `"$password`""
+
+$values = Invoke-Expression $cmd
+$exitCode = $LASTEXITCODE
+
+if ($exitCode -ne 0) {
+    Write-Host "Chyba ve skriptu GetApplicationInfo.ps1 (ExitCode: $exitCode)"
+    exit $exitCode
 }
 
 $applicationUid   = $values[0]
