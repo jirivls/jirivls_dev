@@ -57,7 +57,7 @@ Invoke-ScriptWithExitCheck -ScriptPath "$PSScriptRoot\GitNewBranchProcessing.ps1
 # ========================
 Write-Host "Spousteni skriptu ConfigDevelopBranchProcessing.ps1"
 Invoke-ScriptWithExitCheck -ScriptPath "$PSScriptRoot\ConfigDevelopBranchProcessing.ps1" -Arguments @{ version = $nextVersion }
-<#
+
 # ========================
 # SP SP_AdminCreateNewAppication
 # ========================
@@ -125,4 +125,3 @@ Write-Host "Spousteni skriptu CopyFiles.ps1 pro kopirovani instalacniho balicku 
 Invoke-ScriptWithExitCheck -ScriptPath "$PSScriptRoot\CopyFiles.ps1" -Arguments @{ version = $branchVersion }
 
 Write-Host "Vsechny skripty probehly uspesne."
-#>
