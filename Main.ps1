@@ -51,7 +51,7 @@ Write-Host "Nova verze pro develop: $nextVersion"
 # ========================
 Write-Host "Spousteni skriptu GitNewBranchProcessing.ps1"
 Invoke-ScriptWithExitCheck -ScriptPath "$PSScriptRoot\GitNewBranchProcessing.ps1" -Arguments @{ version = $branchVersion }
-
+<#
 # ========================
 # SPUSTENI ConfigDevelopBranchProcessing
 # ========================
@@ -122,5 +122,5 @@ Invoke-ScriptWithExitCheck -ScriptPath "$PSScriptRoot\ConfigNewBranchProcessing.
 # ========================
 Write-Host "Spousteni skriptu CopyFiles.ps1 pro kopirovani instalacniho balicku agenta"
 Invoke-ScriptWithExitCheck -ScriptPath "$PSScriptRoot\CopyFiles.ps1" -Arguments @{ version = $branchVersion }
-
+#>
 Write-Host "Vsechny skripty probehly uspesne." -ForegroundColor Green
