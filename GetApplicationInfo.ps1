@@ -2,11 +2,12 @@ param (
     [string]$server = "192.168.4.1",
     [string]$database = "DOCUX51_DEV_ADMIN",
     [string]$user = "",
-    [string]$password = ""
+    [string]$password = "",
+    [string]$applicationUid
 )
 
 Write-Host "Spusteni SQL query do DB"
-$sqlQuery = "SET NOCOUNT ON; SELECT TOP 1 [Uid], [Name], [Key], [LicenceKey], [Id] FROM [dbo].[Applications] ORDER BY ID DESC"
+$sqlQuery = "SET NOCOUNT ON; SELECT [Uid], [Name], [Key], [LicenceKey], [Id] FROM [dbo].[Applications] WHERE [Uid] = '$applicationUid'"
 
 try {
     # Spusteni prikazu s potlacenou hlavickou a definovanym oddelovacem
@@ -22,7 +23,6 @@ if ($LASTEXITCODE -ne 0 -or $result -match "Sqlcmd:" -or $result -match "Msg \d+
     Write-Host $result
     exit 1
 }
-
 
 Write-Host "Parsovani vysledku pro predani do parametru"
 $parsed = $result | Where-Object {

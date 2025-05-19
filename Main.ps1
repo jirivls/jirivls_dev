@@ -18,7 +18,7 @@ function Invoke-ScriptWithExitCheck {
         exit $exitCode
     }
 }
-
+<#
 # ========================
 # Ziskani root cesty repository
 # ========================
@@ -67,20 +67,19 @@ $database = "DOCUX51_DEV_ADMIN"
 $user     = "uzivatel"
 $password = "heslo"
 
-Write-Host "Spousteni SP_AdminCreateNewAppication pro zalozeni a zprocesovani nove aplikace"
-$sqlQuery = "EXEC SP_AdminCreateNewAppication @NewVersion = N'$branchVersion'"
+$applicationUidRef = [ref]''
 
-try {
-    sqlcmd -S $server `
-           -d $database `
-           -U $user `
-           -P $password `
-           -Q "`"$sqlQuery`"" `
-           -h -1 -s ";" -W 2>&1 | Out-Null
-} catch {
-    Write-Host "Chyba pri volani SP_AdminCreateNewAppication"
-    exit 1
+Invoke-ScriptWithExitCheck -ScriptPath "$PSScriptRoot\CreateNewApplication.ps1" -Arguments @{
+    server            = $server
+    database          = $database
+    user              = $user
+    password          = $password
+    version           = $branchVersion
+    applicationUidOut = $applicationUidRef
 }
+
+$applicationUid = $applicationUidRef.Value
+Write-Host "UID nove aplikace: $applicationUid"
 
 # ========================
 # SPUSTENI GetApplicationInfo.ps1
@@ -88,7 +87,7 @@ try {
 Write-Host "Spousteni SQL query pro ziskani informaci posledni aplikace pomoci sqlcmd"
 
 $scriptPath = "$PSScriptRoot\GetApplicationInfo.ps1"
-$cmd = "powershell -ExecutionPolicy Bypass -File `"$scriptPath`" -server `"$server`" -database `"$database`" -user `"$user`" -password `"$password`""
+$cmd = "powershell -ExecutionPolicy Bypass -File `"$scriptPath`" -server `"$server`" -database `"$database`" -user `"$user`" -password `"$password`" -applicationUid `"$applicationUid`""
 
 $values = Invoke-Expression $cmd
 $exitCode = $LASTEXITCODE
@@ -117,7 +116,7 @@ Invoke-ScriptWithExitCheck -ScriptPath "$PSScriptRoot\ConfigNewBranchProcessing.
     LicenceKey = $licenceKey
     ApplicationId = $applicationId
 }
-
+#>
 # ========================
 # SPUSTENI CopyFiles.ps1
 # ========================
