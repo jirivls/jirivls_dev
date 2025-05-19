@@ -9,16 +9,16 @@ function Invoke-ScriptWithExitCheck {
     $argList = $Arguments.GetEnumerator() | ForEach-Object { "-$($_.Key)", "`"$($_.Value)`"" }
 
     Write-Host "Spousteni: $ScriptPath"
-    & {
-        powershell -ExecutionPolicy Bypass -File $ScriptPath @argList
-    }
-    $exitCode = $LASTEXITCODE
+    powershell -ExecutionPolicy Bypass -File $ScriptPath @argList
+
+    $global:exitCode = $LASTEXITCODE
+
     if ($exitCode -ne 0) {
-        Write-Host "Skript selhal: $ScriptPath (ExitCode: $exitCode)"
+        Write-Host "Skript selhal: $ScriptPath (Existcode: $exitCode)" -ForegroundColor Red
         exit $exitCode
     }
 }
-<#
+
 # ========================
 # Ziskani root cesty repository
 # ========================
@@ -116,11 +116,11 @@ Invoke-ScriptWithExitCheck -ScriptPath "$PSScriptRoot\ConfigNewBranchProcessing.
     LicenceKey = $licenceKey
     ApplicationId = $applicationId
 }
-#>
+
 # ========================
 # SPUSTENI CopyFiles.ps1
 # ========================
 Write-Host "Spousteni skriptu CopyFiles.ps1 pro kopirovani instalacniho balicku agenta"
 Invoke-ScriptWithExitCheck -ScriptPath "$PSScriptRoot\CopyFiles.ps1" -Arguments @{ version = $branchVersion }
 
-Write-Host "Vsechny skripty probehly uspesne."
+Write-Host "Vsechny skripty probehly uspesne." -ForegroundColor Green

@@ -34,7 +34,9 @@ if ($fileCount -ne 1) {
 
     if ($fileCountAfter -ne 1) {
         Write-Host "Po kopirovani je ve slozce stale $fileCountAfter souboru. Ocekavan je presne 1." -ForegroundColor Red
+        exit 1
     }
 } else {
     Write-Host "Slozka obsahuje presne jeden soubor. Kopirovani se neprovadi." -ForegroundColor Red
+    exit 1
 }
