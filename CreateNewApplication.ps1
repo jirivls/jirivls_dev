@@ -33,5 +33,6 @@ try {
     $applicationUidOut.Value = $result.Trim()
 } catch {
     Write-Host "Chyba pri volani SP_AdminCreateNewAppication"
+    Write-Host "test commit pro TC"
     exit 1
 }
