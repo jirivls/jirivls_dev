@@ -1,4 +1,5 @@
-﻿using Telerik.Documents.SpreadsheetStreaming;
+﻿using Telerik.Windows.Documents.Spreadsheet.FormatProviders.OpenXml.Xlsx;
+using Telerik.Windows.Documents.Spreadsheet.Model;
 
 namespace TelerikExportPoC;
 
@@ -7,89 +8,75 @@ internal class Program
     private static void Main()
     {
         var guid = Guid.NewGuid();
-        var filePath = $"C:\\Users\\jiri.volesky\\Desktop\\TelerikPocOutput\\{guid}_Test.xlsx";
+        var filePath = $"C:\\Users\\jiri.volesky\\Desktop\\TelerikPocOutput\\{guid}_RadTest.xlsx";
         var companies = GetMockCompanies();
 
+        var workbook = new Workbook();
+        var worksheet = workbook.Worksheets.Add();
+        worksheet.Name = "Companies";
+
         var headers = new[] { "Name", "VATNo", "Created", "MoneyOwed", "Country" };
+        WriteRow(worksheet, 0, headers);
 
-        var rows = companies.Select(c => new object[]
+        for (var i = 0; i < companies.Count; i++)
         {
-            c.Name,
-            c.VatNo,
-            c.Created,
-            c.MoneyOwed,
-            c.Country
-        });
+            var c = companies[i];
+            var values = new object[] { c.Name, c.VatNo, c.Created, c.MoneyOwed, c.Country };
+            WriteRow(worksheet, i + 1, values);
+        }
 
-        try
+        var formatProvider = new XlsxFormatProvider();
+        using var output = new FileStream(filePath, FileMode.Create);
+        formatProvider.Export(workbook, output, TimeSpan.MaxValue);
+
+        Console.WriteLine("Export ok: " + Path.GetFullPath(filePath));
+    }
+
+    private static void WriteRow(Worksheet worksheet, int rowIndex, IEnumerable<object> values)
+    {
+        int colIndex = 0;
+        foreach (var value in values)
         {
-            using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-            using var workbook =
-                SpreadExporter.CreateWorkbookExporter(SpreadDocumentFormat.Xlsx, fileStream, SpreadExportMode.Create);
-            using var worksheet = workbook.CreateWorksheetExporter("Companies");
+            var cell = worksheet.Cells[rowIndex, colIndex];
 
-            WriteRow(worksheet, headers);
-
-            foreach (var row in rows)
+            switch (value)
             {
-                WriteRow(worksheet, row);
+                case null:
+                    cell.SetValue(string.Empty);
+                    break;
+                case string s:
+                    cell.SetValue(s);
+                    break;
+                case int i:
+                    cell.SetValue(i);
+                    break;
+                case double d:
+                    cell.SetValue(d);
+                    break;
+                case decimal dec:
+                    cell.SetValue(Convert.ToDouble(dec));
+                    break;
+                case bool b:
+                    cell.SetValue(b);
+                    break;
+                case DateTime dt:
+                    cell.SetValue(dt);
+                    break;
+                default:
+                    cell.SetValue(value.ToString());
+                    break;
             }
 
-            Console.WriteLine("Export complete: " + Path.GetFullPath(filePath));
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("Error: " + e.Message);
-            throw;
+            colIndex++;
         }
     }
 
-    private static void WriteRow(IWorksheetExporter worksheet, IEnumerable<object> values)
-    {
-        using var row = worksheet.CreateRowExporter();
-        foreach (var value in values)
-            WriteCell(row, value);
-    }
-
-    private static void WriteCell(IRowExporter row, object value)
-    {
-        using var cell = row.CreateCellExporter();
-
-        switch (value)
-        {
-            case null:
-                cell.SetValue(string.Empty);
-                break;
-            case string s:
-                cell.SetValue(s);
-                break;
-            case int i:
-                cell.SetValue(i);
-                break;
-            case double d:
-                cell.SetValue(d);
-                break;
-            case decimal dec:
-                cell.SetValue((double)dec);
-                break;
-            case bool b:
-                cell.SetValue(b);
-                break;
-            case DateTime dt:
-                cell.SetValue(dt);
-                break;
-            default:
-                cell.SetValue(value.ToString());
-                break;
-        }
-    }
-
-    private static List<CompanyEntry> GetMockCompanies()
+    private static List<Company> GetMockCompanies()
     {
         var rnd = new Random();
         var countries = new[] { "GE", "FR", "CZ", "USA", "JAP" };
         return Enumerable.Range(1, 20)
-            .Select(i => new CompanyEntry(
+            .Select(i => new Company(
                 $"Company {i}",
                 10000000 + i,
                 DateTime.Today.AddDays(-i),
@@ -98,5 +85,5 @@ internal class Program
             )).ToList();
     }
 
-    private sealed record CompanyEntry(string Name, int VatNo, DateTime Created, decimal MoneyOwed, string Country);
+    private sealed record Company(string Name, int VatNo, DateTime Created, decimal MoneyOwed, string Country);
 }
