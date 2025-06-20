@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using System.Net.Http.Headers;
+using System.Text;
+using AresPoC.ENums;
+using AresPoC.Models;
 using AresPoC.Services.Domain;
 using Newtonsoft.Json;
 
@@ -106,5 +109,128 @@ public class RestApiService(IAuthService authService) : IRestApiService
         var dmsSuccess = await dmsResponse.Content.ReadAsStringAsync(token).ConfigureAwait(false);
         Console.WriteLine("DMS OK:");
         Console.WriteLine(dmsSuccess);
+    }
+
+    public async Task CallCommonApiAsync(ApiCallRequest request, CancellationToken token)
+    {
+        using var client = new HttpClient();
+
+        ApplyHeadersFromRequest(client, request);
+        await ApplyAuthenticationAsync(client, request.Auth, token).ConfigureAwait(false);
+
+        var url = request.Url;
+
+        var httpMethod = request.Method switch
+        {
+            EMethodType.Get => HttpMethod.Get,
+            EMethodType.Post => HttpMethod.Post,
+            EMethodType.Put => HttpMethod.Put,
+            EMethodType.Patch => HttpMethod.Patch,
+            EMethodType.Delete => HttpMethod.Delete,
+            _ => throw new NotSupportedException($"Nepodporovana metoda.")
+        };
+
+        var message = new HttpRequestMessage(httpMethod, url);
+
+        if (httpMethod != HttpMethod.Get && !string.IsNullOrWhiteSpace(request.Body))
+        {
+            message.Content = new StringContent(request.Body, Encoding.UTF8, "application/json");
+        }
+
+        var response = await client.SendAsync(message, token).ConfigureAwait(false);
+
+        var responseContent = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+        var bp = string.Empty;
+    }
+
+    private static void ApplyHeadersFromRequest(HttpClient client, ApiCallRequest request)
+    {
+        if (request.Headers == null) return;
+
+        foreach (var header in request.Headers)
+        {
+            if (header.Key.Equals("accept", StringComparison.OrdinalIgnoreCase))
+            {
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(
+                    new MediaTypeWithQualityHeaderValue(header.Value));
+            }
+            else
+            {
+                if (!client.DefaultRequestHeaders.Contains(header.Key))
+                    client.DefaultRequestHeaders.TryAddWithoutValidation(header.Key, header.Value);
+            }
+        }
+    }
+
+    private async Task ApplyAuthenticationAsync(HttpClient client, AuthenticationModel? auth, CancellationToken token)
+    {
+        if (auth == null || auth.AuthType == EAuthType.None)
+            return;
+
+        switch (auth.AuthType)
+        {
+            case EAuthType.Basic:
+                if (!string.IsNullOrWhiteSpace(auth.Username) && !string.IsNullOrWhiteSpace(auth.Password))
+                {
+                    var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{auth.Username}:{auth.Password}"));
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64);
+                }
+
+                break;
+
+            case EAuthType.ApiToken:
+                if (!string.IsNullOrWhiteSpace(auth.Token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
+                }
+
+                break;
+
+            case EAuthType.TokenAuth:
+                if (!string.IsNullOrWhiteSpace(auth.Username) && !string.IsNullOrWhiteSpace(auth.Password))
+                {
+                    var tokenValue =
+                        await RequestTokenWithCredentialsAsync(auth.Username, auth.Password, auth.TokenUrl, token)
+                            .ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(tokenValue))
+                    {
+                        client.DefaultRequestHeaders.Authorization =
+                            new AuthenticationHeaderValue("Bearer", tokenValue);
+                    }
+                }
+
+                break;
+        }
+    }
+
+    private static async Task<string?> RequestTokenWithCredentialsAsync(string username, string password,
+        string? tokenUrlOverride, CancellationToken token)
+    {
+        var tokenUrl = tokenUrlOverride;
+
+        using var authClient = new HttpClient();
+
+        var payload = new { Username = username, Password = password };
+        var json = JsonConvert.SerializeObject(payload);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await authClient.PostAsync(tokenUrl, content, token).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode) return null;
+
+        var responseContent = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+        var parsed = JsonConvert.DeserializeObject<AuthTokenResponse>(responseContent);
+
+        return parsed?.Data?.Token;
+    }
+
+    private record AuthTokenResponse
+    {
+        public TokenData? Data { get; set; }
+    }
+
+    private record TokenData
+    {
+        public string? Token { get; set; }
     }
 }
