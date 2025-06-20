@@ -10,9 +10,14 @@
   <ItemGroup>
     <PackageReference Include="Docnet.Core" Version="2.6.0" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.5" />
+    <PackageReference Include="Telerik.Documents.Fixed.FormatProviders.Image.Skia" Version="2025.2.520" />
+    <PackageReference Include="Telerik.Documents.Flow.FormatProviders.Doc" Version="2025.2.520" />
     <PackageReference Include="Telerik.Documents.Spreadsheet" Version="2025.2.520" />
     <PackageReference Include="Telerik.Documents.Spreadsheet.FormatProviders.OpenXml" Version="2025.2.520" />
     <PackageReference Include="Telerik.Documents.Spreadsheet.FormatProviders.Pdf" Version="2025.2.520" />
+    <PackageReference Include="Telerik.Windows.Documents.Fixed" Version="2025.2.520" />
+    <PackageReference Include="Telerik.Windows.Documents.Flow" Version="2025.2.520" />
+    <PackageReference Include="Telerik.Windows.Documents.Flow.FormatProviders.Pdf" Version="2025.2.520" />
   </ItemGroup>
 
 </Project>

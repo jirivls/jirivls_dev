@@ -1,0 +1,6 @@
+@AresPoC_HostAddress = http://localhost:5041
+
+GET {{AresPoC_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
