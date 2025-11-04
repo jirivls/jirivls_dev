@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Socosit.Dms.AvaPublisher", "Socosit.Dms.AvaPublisher.csproj", "{D6E5F291-48B8-471F-BB54-92DE45639427}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D6E5F291-48B8-471F-BB54-92DE45639427}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6E5F291-48B8-471F-BB54-92DE45639427}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6E5F291-48B8-471F-BB54-92DE45639427}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6E5F291-48B8-471F-BB54-92DE45639427}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B949B292-ACB7-43C1-B058-214680F03FBE}
+	EndGlobalSection
+EndGlobal
