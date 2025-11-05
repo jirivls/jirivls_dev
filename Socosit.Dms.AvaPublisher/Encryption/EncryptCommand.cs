@@ -19,6 +19,15 @@ public sealed class EncryptCommand : Command<EncryptSettings>
     {
         try
         {
+            var passedOutput = Path.GetFullPath(s.Output!);
+            var outputDir = Directory.Exists(passedOutput) ? passedOutput : Path.GetDirectoryName(passedOutput)!;
+
+            var inputName = Path.GetFileNameWithoutExtension(s.Input);
+            var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var outputFileName = $"{timestamp}_{inputName}.zip";
+            s.Output = Path.Combine(outputDir, outputFileName);
+            s.Output = Path.Combine(outputDir, outputFileName);
+
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(s.Output!))!);
             if (File.Exists(s.Output) && s.Overwrite) File.Delete(s.Output!);
 

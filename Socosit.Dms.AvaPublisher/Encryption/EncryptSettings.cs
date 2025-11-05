@@ -26,14 +26,39 @@ public sealed class EncryptSettings : CommandSettings
     {
         if (string.IsNullOrWhiteSpace(Input))
             return ValidationResult.Error("Chybí --input");
+
         if (string.IsNullOrWhiteSpace(Output))
             return ValidationResult.Error("Chybí --output");
+
         if (!File.Exists(Input))
             return ValidationResult.Error($"Nenalezen vstupní ZIP: {Input}");
+
         if (Level < 0 || Level > 9)
             return ValidationResult.Error("Nevalidní hodnota --level. Must be 0..9.");
+
         if (File.Exists(Output) && !Overwrite)
             return ValidationResult.Error($"Výstupní soubor existuje: {Output}. Použij --overwrite.");
+
+        var outPath = Path.GetFullPath(Output!);
+        var outDir = Directory.Exists(outPath)
+            ? outPath
+            : Path.GetDirectoryName(outPath);
+
+        if (string.IsNullOrWhiteSpace(outDir))
+            return ValidationResult.Error($"Neplatná cesta výstupu: {Output}");
+
+        if (!Directory.Exists(outDir))
+        {
+            try
+            {
+                Directory.CreateDirectory(outDir);
+            }
+            catch
+            {
+                return ValidationResult.Error($"Neplatná cesta výstupu: {Output}");
+            }
+        }
+
         return ValidationResult.Success();
     }
 }
